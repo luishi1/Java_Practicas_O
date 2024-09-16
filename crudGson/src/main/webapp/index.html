@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Productos</title>
+    <link href="style.css" rel="stylesheet" />
+
+    <script>
+        async function fetchProducts() {
+            const response = await fetch('/crudGson/ProductServlet');
+            const products = await response.json();
+            displayProducts(products);
+        }
+
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+
+            const table = document.createElement('table');
+            const headerRow = `
+                <tr>
+                    <th>Título</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                </tr>
+            `;
+            table.innerHTML = headerRow;
+
+            products.forEach(product => {
+                const productRow = `
+                    <tr>
+                        <td>${product.title}</td>
+                        <td>${product.description}</td>
+                        <td>$${product.price}</td>
+                    </tr>
+                `;
+                table.innerHTML += productRow;
+            });
+
+            productList.appendChild(table);
+        }
+
+        async function addProduct() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const price = parseFloat(document.getElementById('price').value);
+
+            const product = { title, description, price };
+
+            const response = await fetch('/crudGson/ProductServlet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(product)
+            });
+
+            const result = await response.json();
+            console.log(result);
+            fetchProducts();
+
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('price').value = '';
+        }
+
+        window.onload = function() {
+            fetchProducts();
+        };
+    </script>
+</head>
+<body>
+    <h1>Lista de Productos</h1>
+    <div id="product-list"></div>
+
+    <h2>Agregar Producto</h2>
+    <form onsubmit="event.preventDefault(); addProduct();">
+        <label for="title">Título:</label>
+        <input type="text" id="title" required>
+        <br>
+        <label for="description">Descripción:</label>
+        <input type="text" id="description" required>
+        <br>
+        <label for="price">Precio:</label>
+        <input type="number" id="price" required step="0.01">
+        <br>
+        <button type="submit">Agregar Producto</button>
+    </form>
+</body>
+</html>
